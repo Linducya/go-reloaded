@@ -1,4 +1,13 @@
-go-reloaded
+go-reloaded is a text modifier tool that:
+
+1. Receives two file names (input and output) as arguments.
+   checking if two command-line arguments are provided (input and output file names).
+   If not, we display a usage message and exit.
+   We retrieve the file names using os.Args.
+
+2. Reads the content of the input file.
+3. Modifies the content in some way.
+4. Writes the modified content to the output file.
 
 Objectives
 In this project you will use some of your old functions made in your old repository. You will use them with the objective of making a simple text completion/editing/auto-correction tool.
