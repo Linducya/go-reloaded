@@ -4,7 +4,6 @@ go-reloaded is a text modifier tool that:
    checking if two command-line arguments are provided (input and output file names).
    If not, we display a usage message and exit.
    We retrieve the file names using os.Args.
-
 2. Reads the content of the input file.
 3. Modifies the content in some way.
 4. Writes the modified content to the output file.
