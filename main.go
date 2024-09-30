@@ -5,7 +5,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"unicode"
+
+	"learn.01founders.co/git/lthomson/go-reloaded/textutils"
 )
 
 func main() {
@@ -14,14 +15,6 @@ func main() {
 		fmt.Println("Text modifier usage: please enter <input file> <output file>")
 		os.Exit(1) // Prints exit status 1. The program did not run successfully as the required arguments were not provided.
 	}
-
-	// Variables for keywords
-	// hex := "(hex)"
-	// binary := "(bin)"
-	// uppercase := "(up)"
-	// lowercase := "(low)"
-	// caps := "(cap)"
-	// capNumber := 0
 
 	// Get the input & output file names from command-line arguemts
 	inputFile := os.Args[1]
@@ -52,27 +45,6 @@ func main() {
 	// Loop through words
 	for i := 0; i < len(words); i++ {
 
-		if words[i] == "(cap)" && i > 0 {
-			//Capitalize the word before "(cap)" using capitalizeWord function
-			words[i-1] = capitalizeWord(words[i-1])
-			// Remove the (cap) keyword
-			words = append(words[:i], words[i+1:]...)
-		}
-
-		if words[i] == "(up)" && i > 0 {
-			//Convert word to UPPERCASE
-			words[i-1] = strings.ToUpper(string(words[i-1]))
-			// Remove the (up) keyword
-			words = append(words[:i], words[i+1:]...)
-		}
-
-		if words[i] == "(low)" && i > 0 {
-			// convert to Lowercase
-			words[i-1] = strings.ToLower(string(words[i-1]))
-			// Remove the (low) keyword
-			words = append(words[:i], words[i+1:]...)
-		}
-
 		// if (hex) should replace the word before with the decimal version of hex
 		if words[i] == "(hex)" && i > 0 {
 			// Convert the word before (hex) to decimal with hexToDecimal function
@@ -89,7 +61,8 @@ func main() {
 			}
 		}
 
-		// if (bin) replace the word before with decimal version of binary
+		// Every instance of (bin) should replace the word before with the decimal version of the word
+		// (in this case the word will always be a binary number).
 		if words[i] == "(bin)" && i > 0 {
 			decimal, err := strconv.ParseInt(words[i-1], 2, 64)
 			if err != nil {
@@ -101,10 +74,49 @@ func main() {
 				words = append(words[:i], words[i+1:]...)
 				i-- // Adjust index since we removed one word
 			}
+		}
 
+		// Every instance of (up) converts the word before with the Uppercase version of it.
+		if words[i] == "(up)" && i > 0 {
+			//Convert word to UPPERCASE
+			words[i-1] = strings.ToUpper(string(words[i-1]))
+			// Remove the (up) keyword
+			words = append(words[:i], words[i+1:]...)
+		}
+
+		// Every instance of (low) converts the word before with the Lowercase version of it.
+		if words[i] == "(low)" && i > 0 {
+			// convert to Lowercase
+			words[i-1] = strings.ToLower(string(words[i-1]))
+			// Remove the (low) keyword
+			words = append(words[:i], words[i+1:]...)
+		}
+
+		// Every instance of (cap) converts the word before with the capitalized version of it.
+		if words[i] == "(cap)" && i > 0 {
+			//Capitalize the word before "(cap)" using capitalizeWord function
+			words[i-1] = textutils.CapitalizeWord(words[i-1])
+			// Remove the (cap) keyword
+			words = append(words[:i], words[i+1:]...)
+		}
+
+		// Every instance of a should be turned into an if the next word begins with a vowel (a, e, i, o, u) or a h.
+		if (words[i] == "a" || words[i] == "A") && i+1 < len(words) {
+			// Get the first letter of the next word
+			firstLetter := string(words[i+1][0])
+			// Check if the first letter of the next word is a vowel with helper function isVowel
+			// if firstLetter == "a" || firstLetter == "e" || firstLetter == "i" || firstLetter == "o" || firstLetter == "u" ||
+			// 	firstLetter == "A" || firstLetter == "E" || firstLetter == "I" || firstLetter == "O" || firstLetter == "U" {
+			if textutils.IsVowel(firstLetter) {
+				// Replace "a" with "an" and "A" with "An"
+				if words[i] == "a" {
+					words[i] = "an"
+				} else if words[i] == "A" {
+					words[i] = "An"
+				}
+			}
 		}
 	}
-
 	// Convert all words to UPPERCASE with strings.ToUpper():
 	// modifiedData := strings.ToUpper(string(inputData))
 	// Convert all words to uppercase with for loop
@@ -128,14 +140,15 @@ func main() {
 	}
 
 	// Print the modified content to the terminal
-	fmt.Println("Modified content")
+	fmt.Println("Modified content:")
 	fmt.Println(modifiedStr)
+
 }
 
 // FUNCTIONS
 
 // Helper function to capitalize a word
-func capitalizeWord(word string) string {
+/* func capitalizeWord(word string) string {
 	// Capitalize the alaphabetic part of the word
 	// But keep punctuation intact, so we use unicode to handle it properly
 	for i, r := range word {
@@ -145,10 +158,10 @@ func capitalizeWord(word string) string {
 		}
 	}
 	return word
-}
+} */
 
 // Helper function to capitalize just the first letter of a word
-func capitalizeFirstLetter(word string) string {
+/* func capitalizeFirstLetter(word string) string {
 	if len(word) == 0 {
 		return word
 	}
@@ -158,9 +171,9 @@ func capitalizeFirstLetter(word string) string {
 		runes[0] = unicode.ToUpper(runes[0])
 	}
 	return string(runes)
-}
+} */
 
-// Helper function to convert hex to decimal
+/* // Helper function to convert hex to decimal
 func hexToDecimal(hex string) (int64, error) {
 	// Convert the hex strting to decimal (base 10)
 	decimal, err := strconv.ParseInt(hex, 16, 64)
@@ -169,6 +182,14 @@ func hexToDecimal(hex string) (int64, error) {
 	}
 	return decimal, nil
 }
+*/
+
+/* // Helper function to check for vowel
+  func isVowel(letter string) bool {
+	vowels := "aeiouAEIOU"
+	return strings.Contains(vowels, letter)
+ }
+*/
 
 /* // Helper function to remove keyword
 func remKeyword(keyword string) {
@@ -182,3 +203,11 @@ func remKeyword(keyword string) {
 // // Convert the string to slice of byte
 // outputData := []byte(modifiedData)
 // fmt.Println(string(outputData))
+
+// Variables for keywords
+// hex := "(hex)"
+// binary := "(bin)"
+// uppercase := "(up)"
+// lowercase := "(low)"
+// caps := "(cap)"
+// capNumber := 0
