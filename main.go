@@ -20,8 +20,8 @@ func main() {
 	inputFile := os.Args[1]
 	outputFile := os.Args[2]
 
-	fmt.Println(inputFile)
-	fmt.Println(outputFile)
+	fmt.Println("Input filename: ", inputFile)
+	fmt.Println("Output filename: ", outputFile)
 
 	// Read the contents from the input file into a []byte var inputData
 	inputData, err := os.ReadFile(inputFile)
@@ -82,6 +82,7 @@ func main() {
 			words[i-1] = strings.ToUpper(string(words[i-1]))
 			// Remove the (up) keyword
 			words = append(words[:i], words[i+1:]...)
+			i-- // Adjust index since we removed one word
 		}
 
 		// Every instance of (low) converts the word before with the Lowercase version of it.
@@ -90,6 +91,7 @@ func main() {
 			words[i-1] = strings.ToLower(string(words[i-1]))
 			// Remove the (low) keyword
 			words = append(words[:i], words[i+1:]...)
+			i-- // Adjust index since we removed one word
 		}
 
 		// Every instance of (cap) converts the word before with the capitalized version of it.
@@ -98,6 +100,7 @@ func main() {
 			words[i-1] = textutils.CapitalizeWord(words[i-1])
 			// Remove the (cap) keyword
 			words = append(words[:i], words[i+1:]...)
+			i-- // Adjust index since we removed one word
 		}
 
 		// Every instance of a should be turned into an if the next word begins with a vowel (a, e, i, o, u) or a h.
@@ -116,7 +119,51 @@ func main() {
 				}
 			}
 		}
+
+		/* 	// Every instance of the punctuations ., ,, !, ?, : and ;
+		// should be close to the previous word and with space apart from the next one.
+		if textutils.IsPunctuation(words[i]) && i > 0 {
+			fmt.Println("Punctuation:", words[i])
+			// Next two lines are an alternative:
+			// words[i] = words[i-1] + words[i]
+			// words = append(words[:i-1], words[i:]...)
+			words[i-1] = words[i-1] + words[i]
+			fmt.Println("Punctuation:", words[i])
+			// words = append(words[:i], words[i-1:]...)
+			words = append(words[:i], words[i+1:]...)
+			i-- // Adjust index since we removed one word
+		} */
+
+		// If case punction is attached to next word, e.g. move comma to previous word
+		// Get the first character of the word
+		charIndex := 0
+		firstChar := string(words[i][charIndex])
+		for charIndex < len(words[i]); charIndex++ {
+		if textutils.IsPunctuation(firstChar) && i > 0 {
+			// add punctuation character to previous word:
+			words[i-1] = words[i-1] + firstChar
+			fmt.Println("moved punctuation", firstChar, "to ", words[i-1])
+
+			if len(words[i]) > 1 {
+					// Remove the first character from the current word
+				words[i] = words[i][1:] // Slice from the second character onward
+
+				// If more than one punctuation char/groups of punctuation like: ... or !?
+
+			} else {
+				// words[i] = "" // If the word only had one character, set it to an empty string
+				words = append(words[:i], words[i+1:]...)
+				i-- // Adjust index since we removed one word
+
+			}
+
+			fmt.Println("removed first char punctuation from word[i]", words[i])
+		}
+
+		// The punctuation mark ' will always be found with another instance of it
+
 	}
+
 	// Convert all words to UPPERCASE with strings.ToUpper():
 	// modifiedData := strings.ToUpper(string(inputData))
 	// Convert all words to uppercase with for loop
@@ -188,7 +235,7 @@ func hexToDecimal(hex string) (int64, error) {
   func isVowel(letter string) bool {
 	vowels := "aeiouAEIOU"
 	return strings.Contains(vowels, letter)
- }
+	}
 */
 
 /* // Helper function to remove keyword
