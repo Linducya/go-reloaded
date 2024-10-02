@@ -44,6 +44,10 @@ func main() {
 
 	// Loop through words
 	for i := 0; i < len(words); i++ {
+		// Ensure the word has at least one character
+		if len(words[i]) == 0 {
+			continue
+		}
 
 		// if (hex) should replace the word before with the decimal version of hex
 		if words[i] == "(hex)" && i > 0 {
@@ -77,6 +81,7 @@ func main() {
 		}
 
 		// Every instance of (up) converts the word before with the Uppercase version of it.
+		// Check if the word contains a "(cap," pattern
 		if words[i] == "(up)" && i > 0 {
 			//Convert word to UPPERCASE
 			words[i-1] = strings.ToUpper(string(words[i-1]))
@@ -135,46 +140,50 @@ func main() {
 		} */
 
 		// If case punction is attached to next word, e.g. move comma to previous word
-		// Get the first character of the word
+
+		// Initialize index to track the first non-punctuation character
 		charIndex := 0
-		firstChar := string(words[i][charIndex])
-		for charIndex < len(words[i]); charIndex++ {
-		if textutils.IsPunctuation(firstChar) && i > 0 {
-			// add punctuation character to previous word:
-			words[i-1] = words[i-1] + firstChar
-			fmt.Println("moved punctuation", firstChar, "to ", words[i-1])
+		// Get the first character of the word at index 0
+		// char := string(words[i][charIndex])
 
-			if len(words[i]) > 1 {
-					// Remove the first character from the current word
-				words[i] = words[i][1:] // Slice from the second character onward
+		// Count number of leading punctuation characters
+		// for charIndex < len(words[i]) {
+		// if textutils.IsPunctuation(firstChar) && i > 0 {
+		for charIndex < len(words[i]) && textutils.IsPunctuation(string(words[i][charIndex])) {
+			charIndex++
+		}
 
-				// If more than one punctuation char/groups of punctuation like: ... or !?
+		// charIndex indicates if there are leading puntuation characters and a previous word exists i > 0.
+		if charIndex > 0 && i > 0 {
+			// Extract the leading punctuation characters into punctuation variable by slicing up to charIndex
+			punctuation := words[i][:charIndex]
+			fmt.Println("Punctuation characters extracted:", punctuation)
 
-			} else {
-				// words[i] = "" // If the word only had one character, set it to an empty string
-				words = append(words[:i], words[i+1:]...)
-				i-- // Adjust index since we removed one word
+			// Add punctuation characters to previous word:
+			words[i-1] = words[i-1] + punctuation
+			fmt.Println("Moved punctuation", punctuation, "to", words[i-1])
 
+			// If the word has more than one punctuation character, remove
+			// if len(words[i]) > 1 {
+			// Remove the leading punctuationfrom the current word
+			words[i] = words[i][charIndex:] // Slice from the character index onward
+
+			// If more than one punctuation char/groups of punctuation like: ... or !?
+			// } else {
+			// If the current word becomes empty after removing punctuation, delete it
+			if words[i] == "" {
+				fmt.Println("one word removed:", words[i])
+				words = append(words[:i], words[i+1:]...) // Remove the empty word
+				i--                                       // Adjust index since we removed one word
 			}
-
-			fmt.Println("removed first char punctuation from word[i]", words[i])
 		}
 
 		// The punctuation mark ' will always be found with another instance of it
+		// if words[i] == "'" && i > 0 {
+		// 	continue
+		// }
 
 	}
-
-	// Convert all words to UPPERCASE with strings.ToUpper():
-	// modifiedData := strings.ToUpper(string(inputData))
-	// Convert all words to uppercase with for loop
-	// for i := 0; i < len(inputData); i++ {
-	// 	if inputData[i] >= 'a' && inputData[i] <= 'z' {
-	// 		inputData[i] -= 'a' - 'A'
-	// 	}
-	// }
-	// Print the modifed data to the terminal
-	// modifiedData := inputData
-	// fmt.Println(string(modifiedData))
 
 	// Join the modifed words back into a single string
 	modifiedStr := strings.Join(words, " ")
@@ -192,69 +201,14 @@ func main() {
 
 }
 
-// FUNCTIONS
-
-// Helper function to capitalize a word
-/* func capitalizeWord(word string) string {
-	// Capitalize the alaphabetic part of the word
-	// But keep punctuation intact, so we use unicode to handle it properly
-	for i, r := range word {
-		if unicode.IsLetter(r) {
-			// Capitalize the first alphabetic character
-			return strings.ToUpper(string(r)) + word[i+1:]
-		}
-	}
-	return word
-} */
-
-// Helper function to capitalize just the first letter of a word
-/* func capitalizeFirstLetter(word string) string {
-	if len(word) == 0 {
-		return word
-	}
-	// Capitalize the first letter and leave the rest of the word unchanged
-	runes := []rune(word)
-	if unicode.IsLetter(runes[0]) {
-		runes[0] = unicode.ToUpper(runes[0])
-	}
-	return string(runes)
-} */
-
-/* // Helper function to convert hex to decimal
-func hexToDecimal(hex string) (int64, error) {
-	// Convert the hex strting to decimal (base 10)
-	decimal, err := strconv.ParseInt(hex, 16, 64)
-	if err != nil {
-		return 0, err
-	}
-	return decimal, nil
-}
-*/
-
-/* // Helper function to check for vowel
-  func isVowel(letter string) bool {
-	vowels := "aeiouAEIOU"
-	return strings.Contains(vowels, letter)
-	}
-*/
-
-/* // Helper function to remove keyword
-func remKeyword(keyword string) {
-	words[i-1] = fmt.Sprintf("%d", decimal)
-				// Remove the (bin) keyword
-				words = append(words[:i], words[i+1:]...)
-				i-- // Adjust index since we removed one word
-
-} */
-
-// // Convert the string to slice of byte
-// outputData := []byte(modifiedData)
-// fmt.Println(string(outputData))
-
-// Variables for keywords
-// hex := "(hex)"
-// binary := "(bin)"
-// uppercase := "(up)"
-// lowercase := "(low)"
-// caps := "(cap)"
-// capNumber := 0
+// Convert all words to UPPERCASE with strings.ToUpper():
+// modifiedData := strings.ToUpper(string(inputData))
+// Convert all words to uppercase with for loop
+// for i := 0; i < len(inputData); i++ {
+// 	if inputData[i] >= 'a' && inputData[i] <= 'z' {
+// 		inputData[i] -= 'a' - 'A'
+// 	}
+// }
+// Print the modifed data to the terminal
+// modifiedData := inputData
+// fmt.Println(string(modifiedData))
