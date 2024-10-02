@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -29,8 +30,6 @@ func main() {
 		fmt.Println("Error reading input file:", err) // open <filename>: no such file or directory
 		os.Exit(1)
 	}
-
-	// Modify the contents
 
 	// Convert the []byte inputData to string for easier manipulation
 	inputStr := string(inputData)
@@ -81,7 +80,6 @@ func main() {
 		}
 
 		// Every instance of (up) converts the word before with the Uppercase version of it.
-		// Check if the word contains a "(cap," pattern
 		if words[i] == "(up)" && i > 0 {
 			//Convert word to UPPERCASE
 			words[i-1] = strings.ToUpper(string(words[i-1]))
@@ -104,6 +102,68 @@ func main() {
 			//Capitalize the word before "(cap)" using capitalizeWord function
 			words[i-1] = textutils.CapitalizeWord(words[i-1])
 			// Remove the (cap) keyword
+			words = append(words[:i], words[i+1:]...)
+			i-- // Adjust index since we removed one word
+		}
+
+		// Check if the word contains a "(cap," pattern
+		// Use a regular expression to match the "(cap, N)" pattern
+		re := regexp.MustCompile(`\(cap,\s*(\d+)\s*\)`)
+
+		// Check if the word matches the pattern
+		matches := re.FindStringSubmatch(words[i])
+		// fmt.Println("matches:", matches)
+
+		if len(matches) > 0 {
+			// Extract the number inside the parentheses
+			insideParens := matches[1]
+
+			// Debug: Print the extracted value
+			fmt.Println("Extracted from parentheses:", insideParens)
+
+			// Convert the number to an integer
+			numWords, err := strconv.Atoi(insideParens)
+
+			/* 	}
+			if strings.HasPrefix(words[i], "(cap,") {
+				// Extract the number of words to capitalize
+				insideParens := strings.TrimSuffix(strings.TrimPrefix(words[i], "(cap,"), ")")
+				// Debugging: Print what is extracted from inside the parentheses
+				fmt.Println("Extracted from parentheses:", insideParens)
+				// Remove any leading/trailing spaces
+				insideParens = strings.TrimSpace(insideParens)
+				// convert number inside word to int
+				numWords, err := strconv.Atoi(insideParens)
+				// Debug: Print the extracted number of words
+				fmt.Println("numWords:", numWords)
+				// // Debug: Show which words are being capitalized
+				// fmt.Println("Capitalizing words from index", startIdx, "to", i-1) */
+
+			if err == nil && numWords > 0 {
+				// Ensure there's enough words to capitalize
+				// Check that we have at least one word before (cap,)
+				if i >= 1 {
+					// Calculate the start index for capitalization
+					fmt.Println("numwords no error:", numWords)
+					startIdx := i - numWords
+					if startIdx < 0 {
+						startIdx = 0 // Adjust to start from the first word if we exceed bounds
+					}
+
+					// Debug: Show which words are being capitalized
+					fmt.Println("Capitalizing words from index", startIdx, "to", i-1)
+
+					// Capitalize the previous 'numWords' words
+					for j := startIdx; j < i; j++ {
+						words[j] = textutils.CapitalizeWord(words[j])
+					}
+				} else {
+					fmt.Println("Error: insufficient words to capitalize:", insideParens)
+				}
+			} else {
+				fmt.Println("Error: invalid number for capitalization:", insideParens)
+			}
+			// Remove the (cap, N) keyword
 			words = append(words[:i], words[i+1:]...)
 			i-- // Adjust index since we removed one word
 		}
