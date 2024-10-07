@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	// "honnef.co/go/tools/pattern"
+
 	"learn.01founders.co/git/lthomson/go-reloaded/textutils"
 )
 
@@ -48,103 +50,106 @@ func main() {
 			continue
 		}
 
-		// if (hex) should replace the word before with the decimal version of hex
-		if words[i] == "(hex)" && i > 0 {
-			// Convert the word before (hex) to decimal with hexToDecimal function
-			// words[i-1] = strconv.ParseInt(string(words[i-1]), 16, 64)
-			// decimal, err := hexToDecimal(string(words[i-1]))
-			decimal, err := strconv.ParseInt(words[i-1], 16, 64)
-			if err != nil {
-				fmt.Println("Error converting hex to decimal:", err)
-			} else {
-				// Replace the (hex) and hex number with the decimal version of binary
-				words[i-1] = fmt.Sprintf("%d", decimal)
-				// Remove the (hex) keyword
-				words = append(words[:i], words[i+1:]...)
+		word := words[i]
+		removeKeyword := false
+
+		// For cases that modify the previous word, ensure `i > 0`
+		if i > 0 {
+			switch word {
+
+			case "(hex)":
+				decimal, err := strconv.ParseInt(words[i-1], 16, 64)
+				if err != nil {
+					fmt.Println("Error converting hex to decimal:", err)
+				} else {
+					// Replace the (hex) and hex number with the decimal version of binary
+					words[i-1] = fmt.Sprintf("%d", decimal)
+					removeKeyword = true
+				}
+
+			case "(bin)":
+				decimal, err := strconv.ParseInt(words[i-1], 2, 64)
+				if err != nil {
+					fmt.Println("Error converting binary to decimal:", err)
+				} else {
+					// Replace the (bin) and binary number with the decimal version of binary
+					words[i-1] = fmt.Sprintf("%d", decimal)
+					removeKeyword = true
+				}
+
+			case "(up)":
+				//Convert word to UPPERCASE
+				words[i-1] = strings.ToUpper(string(words[i-1]))
+				removeKeyword = true
+
+			case "(low)":
+				// convert to Lowercase
+				words[i-1] = strings.ToLower(string(words[i-1]))
+				removeKeyword = true
+
+			case "(cap)":
+				//Capitalize the word before "(cap)" using capitalizeWord function
+				words[i-1] = textutils.CapitalizeWord(words[i-1])
+				removeKeyword = true
 			}
 		}
 
-		// Every instance of (bin) should replace the word before with the decimal version of the word
-		// (in this case the word will always be a binary number).
-		if words[i] == "(bin)" && i > 0 {
-			decimal, err := strconv.ParseInt(words[i-1], 2, 64)
-			if err != nil {
-				fmt.Println("Error converting binary to decimal:", err)
-			} else {
-				// Replace the (bin) and binary number with the decimal version of binary
-				words[i-1] = fmt.Sprintf("%d", decimal)
-				// Remove the (bin) keyword
-				words = append(words[:i], words[i+1:]...)
-				i-- // Adjust index since we removed one word
-			}
-		}
-
-		// Every instance of (up) converts the word before with the Uppercase version of it.
-		if words[i] == "(up)" && i > 0 {
-			//Convert word to UPPERCASE
-			words[i-1] = strings.ToUpper(string(words[i-1]))
-			// Remove the (up) keyword
-			words = append(words[:i], words[i+1:]...)
-			i-- // Adjust index since we removed one word
-		}
-
-		// Every instance of (low) converts the word before with the Lowercase version of it.
-		if words[i] == "(low)" && i > 0 {
-			// convert to Lowercase
-			words[i-1] = strings.ToLower(string(words[i-1]))
-			// Remove the (low) keyword
-			words = append(words[:i], words[i+1:]...)
-			i-- // Adjust index since we removed one word
-		}
-
-		// Every instance of (cap) converts the word before with the capitalized version of it.
-		if words[i] == "(cap)" && i > 0 {
-			//Capitalize the word before "(cap)" using capitalizeWord function
-			words[i-1] = textutils.CapitalizeWord(words[i-1])
-			// Remove the (cap) keyword
-			words = append(words[:i], words[i+1:]...)
-			i-- // Adjust index since we removed one word
-		}
-
-		// Check if the word contains a "(cap," pattern
 		// Use a regular expression to match the "(cap, N)" pattern
-		re := regexp.MustCompile(`\(cap,\s*(\d+)\s*\)`)
+		// Captures one or more digits (\d+), placed inside parentheses to form a capturing group.
+		// pattern := `\(cap,\s*(\d+)` // The backslash escapes the parenthesis
+		pattern := `\((cap|up|low),`
+		// keyword := textutils.FindPatterns(words[i])
+		number := `(\d+)\)`
 
+		// Compile the regular expression
+		re := regexp.MustCompile(pattern)
+		// re := regexp.MustCompile(`\(cap,\s*(\d+)\s*\)`)
+
+		// Find the match and capture the keyword
+		keyword := re.FindStringSubmatch(words[i])
+
+		// Check if any match is found
+		/*if re.MatchString(input) {
+			fmt.Println("Pattern found!")
+		} else {
+			fmt.Println("Pattern not found.")
+		} */
 		// Check if the word matches the pattern
-		matches := re.FindStringSubmatch(words[i])
-		// fmt.Println("matches:", matches)
+		// matches := re.FindStringSubmatch(words[i])
+		// fmt.Println("matches:", words[i])
 
-		if len(matches) > 0 {
+		if len(keyword) > 1 { // keyword[0] is the whole match, keyword[1] is the actual keyword
+			capturedKeyword := keyword[1]
+			// Add the next word:
+			words[i] = words[i] + words[i+1]
+			fmt.Println(words[i])
+
+			// Remove the next word
+			words = append(words[:i], words[i+1:]...)
+			// i-- // Adjust index since we removed one word
+
+			// Compile the regular expression
+			re := regexp.MustCompile(number)
+			// re := regexp.MustCompile(`\(cap,\s*(\d+)\s*\)`)
+
+			// Find the match and capture the number
+			matches := re.FindStringSubmatch(words[i])
+
 			// Extract the number inside the parentheses
 			insideParens := matches[1]
 
 			// Debug: Print the extracted value
-			fmt.Println("Extracted from parentheses:", insideParens)
+			fmt.Println("Extracted from parentheses number:", insideParens)
 
 			// Convert the number to an integer
 			numWords, err := strconv.Atoi(insideParens)
 
-			/* 	}
-			if strings.HasPrefix(words[i], "(cap,") {
-				// Extract the number of words to capitalize
-				insideParens := strings.TrimSuffix(strings.TrimPrefix(words[i], "(cap,"), ")")
-				// Debugging: Print what is extracted from inside the parentheses
-				fmt.Println("Extracted from parentheses:", insideParens)
-				// Remove any leading/trailing spaces
-				insideParens = strings.TrimSpace(insideParens)
-				// convert number inside word to int
-				numWords, err := strconv.Atoi(insideParens)
-				// Debug: Print the extracted number of words
-				fmt.Println("numWords:", numWords)
-				// // Debug: Show which words are being capitalized
-				// fmt.Println("Capitalizing words from index", startIdx, "to", i-1) */
-
 			if err == nil && numWords > 0 {
-				// Ensure there's enough words to capitalize
+				// Ensure there's enough words
 				// Check that we have at least one word before (cap,)
 				if i >= 1 {
-					// Calculate the start index for capitalization
-					fmt.Println("numwords no error:", numWords)
+					// Calculate the start index for cap, up, low
+					// fmt.Println("numwords no error:", numWords)
 					startIdx := i - numWords
 					if startIdx < 0 {
 						startIdx = 0 // Adjust to start from the first word if we exceed bounds
@@ -155,7 +160,18 @@ func main() {
 
 					// Capitalize the previous 'numWords' words
 					for j := startIdx; j < i; j++ {
-						words[j] = textutils.CapitalizeWord(words[j])
+						// Switch keywords
+						switch capturedKeyword {
+						case "cap":
+							// Handle 'cap' case
+							words[j] = textutils.CapitalizeWord(words[j])
+						case "up":
+							// Handle 'up' case
+							words[j] = strings.ToUpper(words[j])
+						case "low":
+							// Handle 'up' case
+							words[j] = strings.ToLower(words[j])
+						}
 					}
 				} else {
 					fmt.Println("Error: insufficient words to capitalize:", insideParens)
@@ -163,9 +179,10 @@ func main() {
 			} else {
 				fmt.Println("Error: invalid number for capitalization:", insideParens)
 			}
-			// Remove the (cap, N) keyword
-			words = append(words[:i], words[i+1:]...)
-			i-- // Adjust index since we removed one word
+			// Remove the N) keyword
+			// words = append(words[:i], words[i+1:]...)
+			// i-- // Adjust index since we removed one word
+			removeKeyword = true
 		}
 
 		// Every instance of a should be turned into an if the next word begins with a vowel (a, e, i, o, u) or a h.
@@ -185,9 +202,10 @@ func main() {
 			}
 		}
 
-		/* 	// Every instance of the punctuations ., ,, !, ?, : and ;
+		// If case punction is attached to next word, e.g. move comma to previous word
+		// Every instance of the punctuations ., ,, !, ?, : and ;
 		// should be close to the previous word and with space apart from the next one.
-		if textutils.IsPunctuation(words[i]) && i > 0 {
+		/* 	if textutils.IsPunctuation(words[i]) && i > 0 {
 			fmt.Println("Punctuation:", words[i])
 			// Next two lines are an alternative:
 			// words[i] = words[i-1] + words[i]
@@ -198,8 +216,6 @@ func main() {
 			words = append(words[:i], words[i+1:]...)
 			i-- // Adjust index since we removed one word
 		} */
-
-		// If case punction is attached to next word, e.g. move comma to previous word
 
 		// Initialize index to track the first non-punctuation character
 		charIndex := 0
@@ -233,8 +249,9 @@ func main() {
 			// If the current word becomes empty after removing punctuation, delete it
 			if words[i] == "" {
 				fmt.Println("one word removed:", words[i])
-				words = append(words[:i], words[i+1:]...) // Remove the empty word
-				i--                                       // Adjust index since we removed one word
+				// words = append(words[:i], words[i+1:]...) // Remove the empty word
+				// i--                                       // Adjust index since we removed one word
+				removeKeyword = true
 			}
 		}
 
@@ -242,6 +259,10 @@ func main() {
 		// if words[i] == "'" && i > 0 {
 		// 	continue
 		// }
+		if removeKeyword {
+			words = append(words[:i], words[i+1:]...)
+			i-- // Adjust index since we removed one word
+		}
 
 	}
 
@@ -261,14 +282,3 @@ func main() {
 
 }
 
-// Convert all words to UPPERCASE with strings.ToUpper():
-// modifiedData := strings.ToUpper(string(inputData))
-// Convert all words to uppercase with for loop
-// for i := 0; i < len(inputData); i++ {
-// 	if inputData[i] >= 'a' && inputData[i] <= 'z' {
-// 		inputData[i] -= 'a' - 'A'
-// 	}
-// }
-// Print the modifed data to the terminal
-// modifiedData := inputData
-// fmt.Println(string(modifiedData))
