@@ -1,9 +1,7 @@
 package textutils
 
-import "unicode"
-
-// Helper function to capitalize just the first letter of a word
-func capitalizeFirstLetter(word string) string {
+/* // Helper function to capitalize just the first letter of a word
+func CapitalizeFirstLetter(word string) string {
 	if len(word) == 0 {
 		return word
 	}
@@ -14,3 +12,4 @@ func capitalizeFirstLetter(word string) string {
 	}
 	return string(runes)
 }
+*/

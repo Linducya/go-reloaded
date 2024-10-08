@@ -1,3 +1,3 @@
-module learn.01founders.co/git/lthomson/go-reloaded
+module main
 
 go 1.19
