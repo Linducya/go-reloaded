@@ -33,18 +33,44 @@ Go-Reloaded is a text modifier auto-correction tool written in Go. It processes 
 7. **Article Correction**: Replaces `a` with `an` if the next word starts with a vowel (a, e, i, o, u).
    - Example: `"There it was. A amazing rock!"` → `"There it was. An amazing rock!"`
 
+## Project Structure
+
+The Go package for this project is called `textutils`. It contains utility functions for text processing, such as capitalization, punctuation formatting, and case modifications.
+
+### Folder Structure
+
+- **`textutils/`**: Contains the Go source files for text processing.
+  - Example: `textutils/capitalizeword.go` includes the `CapitalizeWord` function, which capitalizes the first alphabetic character of a word while preserving punctuation.
+
+### Example Usage of `textutils`
+
+You can import and use the `textutils` package in your Go code as follows:
+
+```go
+package main
+
+import (
+    "fmt"
+    "textutils"
+)
+
+func main() {
+    word := "hello"
+    capitalized := textutils.CapitalizeWord(word)
+    fmt.Println(capitalized) // Output: Hello
+}
+```
 ## Usage
 
 1. Create an input file (`sample.txt`) with the text to be modified.
 2. Run the program with the input and output file names as arguments:
    ```bash
-   $ go run . sample.txt result.txt
+   $ go run main.go sample.txt result.txt
    ```
 3. View the modified content in the output file (result.txt).
    ```bash
    $ cat result.txt
    ```
-
 
 ## Test Files
 Example input test files can be found in the input_files folder. These files demonstrate various features of the tool, such as:
@@ -56,7 +82,7 @@ Example input test files can be found in the input_files folder. These files dem
 
 To use these files, simply reference them when running the program. For example:
 ```bash
-$ go run . input_files/sample_case_modifications.txt result.txt
+$ go run . input_files/sample.txt result.txt
 ```
 
 ## Example 1: Case Modifications
